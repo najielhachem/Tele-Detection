@@ -1,2 +1,7 @@
 # MAC
 .DS_STORE
+
+# OBJ and EXE
+NUAGES_5A/OBJ/
+NUAGES_5A/EXE/
+

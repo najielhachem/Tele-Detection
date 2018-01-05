@@ -1,25 +1,25 @@
 
-#---------------------------------------------------------
-#makefile permettant la compilation du programme principal
-#---------------------------------------------------------
+# ---------------------------------------------------------
+# makefile permettant la compilation du programme principal
+# ---------------------------------------------------------
 .KEEP_STATE:
 
-#definition des variables
-CC=gcc
-OBJ=../OBJ
-EXE=../EXE
-CCFLAGS=-Wall -g `pkg-config --cflags gtk+-2.0`
-LDFLAGS=`pkg-config --libs gtk+-2.0`
+# definition des variables
+CC = gcc
+OBJ = ../OBJ
+EXE = ../EXE
+CCFLAGS = -Wall -g `pkg-config --cflags gtk+-2.0`
+LDFLAGS = `pkg-config --libs gtk+-2.0`
 
-#compilation
-OBJ_FILES=compute.o main.o
+# compilation
+OBJ_FILES = compute.o main.o
 
 all: ImaProjet.exe
 
 .c.o:
 	${CC} ${CCFLAGS} -o $@ -c $<
 
-ImaProjet.exe:${OBJ_FILES}
+ImaProjet.exe: ${OBJ_FILES}
 	${CC} -o ${EXE}/$@ ${OBJ_FILES} ${LDFLAGS}
 	mv *.o ${OBJ}
 

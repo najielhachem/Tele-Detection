@@ -40,21 +40,21 @@ void ComputeImage(guchar *pucImaOrig,
 
   printf("Segmentation de l'image.... A vous!\n");
   
-  iNbPixelsTotal=NbCol*NbLine;
-  for(iNumPix=0;
-      iNumPix<iNbPixelsTotal*iNbChannels;
-      iNumPix=iNumPix+iNbChannels){
+  iNbPixelsTotal = NbCol * NbLine;
+  for (iNumPix = 0; iNumPix < iNbPixelsTotal * iNbChannels; iNumPix += iNbChannels)
+	{
     /*moyenne sur les composantes RVB */
-    ucMeanPix=(unsigned char)
-	((
-	  *(pucImaOrig+iNumPix) +
-	  *(pucImaOrig+iNumPix+1) +
-	  *(pucImaOrig+iNumPix+2))/3);
+    ucMeanPix = (unsigned char) 
+			(
+				(
+				 *(pucImaOrig + iNumPix    ) +
+				 *(pucImaOrig + iNumPix + 1) +
+				 *(pucImaOrig + iNumPix + 2) 
+				) / 3
+			);
     /* sauvegarde du resultat */
-    for(iNumChannel=0;
-	iNumChannel<iNbChannels;
-	iNumChannel++)
-      *(pucImaRes+iNumPix+iNumChannel)= ucMeanPix;
+    for (iNumChannel = 0; iNumChannel < iNbChannels; iNumChannel++)
+      *(pucImaRes + iNumPix + iNumChannel) = ucMeanPix;
   }
 }
 

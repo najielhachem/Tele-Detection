@@ -84,7 +84,7 @@ int KMeans(guchar* pucIm,
  	int stable = 0;
 	while (!stable)
 	{
-		guchar newMeans[VecSize * NbClass]; /* nouvelles moyennes des classes */
+		int newMeans[VecSize * NbClass]; /* nouvelles moyennes des classes */
 		int nbElts[NbClass]; /* nombre d'elements dans chaque classe */
 		/* initialisation des nouveaux centres et les nb d'elts a zero */
 		for (int i = 0; i < NbClass; ++i)
@@ -113,7 +113,6 @@ int KMeans(guchar* pucIm,
 			}
 		}
 
-		printf("computing new means\n");
 		stable = 1; /* supposont l'etat stable */
 		/* mise a jour des moyennes */
 		for (int i = 0; i < NbClass; ++i)
@@ -126,27 +125,30 @@ int KMeans(guchar* pucIm,
 			/* prendre la medianne comme valeur homogene */
 			nbElts[i] = nbElts[i] == 0 ? 1 : nbElts[i];
 			guchar val = newMeans[VecSize * i + (VecSize / 2)] / nbElts[i];
-			if (val != means[VecSize * i])
+
+			printf("%d -- %u --> %u\n", i, means[VecSize * i], val);
+			
+			if (abs(val - means[VecSize * i]) > 10)
 				stable = 0;
 			/* fixer la nouvelle valeur de la moyenne */
 			for (int j = 0; j < VecSize; ++j)
 				means[VecSize * i + j] = val;
 		}
+		printf("\n----------------------\n\n");
 	}
 
 	/* recherche de la classe clouds grace aux moyennes */
 	int clouds = 0;
-	guchar maxVal = -1;
+	guchar maxVal = 0;
 	for (int i = 0; i < NbClass; ++i)
 	{
+		printf("%d\n", means[VecSize * i]);
 		if (maxVal < means[VecSize * i])
 		{
 			maxVal = means[VecSize * i];
 			clouds = i;
 		}
 	}
-
-	printf("end of kmeans\n");
 
 	return clouds;
 }
@@ -205,9 +207,6 @@ void ComputeImage(guchar* pucImaOrig,
 	int clouds = KMeans(pucImaRes, NbLine, NbCol, pClasses);
 
 	printf("cloud: %d\n", clouds);
-
-	
-	 
 	
 	/* mettre les pixels du nuage en blancs */
   for (int iNumPix = 0; iNumPix < NbCol * NbLine; ++iNumPix)
@@ -216,7 +215,6 @@ void ComputeImage(guchar* pucImaOrig,
     for (int iNumChannel = 0; iNumChannel < iNbChannels; iNumChannel++)
 		{
 			int i = iNumPix * iNbChannels + iNumChannel;
-			printf("%d - %d\n", iNumPix, pClasses[iNumPix]);
       if (pClasses[iNumPix] == clouds)
 				*(pucImaRes + i) = 255;
 			else

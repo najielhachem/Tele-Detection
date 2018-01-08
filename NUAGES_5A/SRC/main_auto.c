@@ -139,6 +139,8 @@ fonction principale
 int main (int argc, char **argv)
 {
 
+	printf("AUTOOO\n");
+
   /*---------------------------------------------
     Declarations
     ---------------------------------------------*/
@@ -337,5 +339,8 @@ int main (int argc, char **argv)
   gtk_widget_show_all(pwMainWind);
   gtk_main();
   return(0);
+
+
+
 
 }

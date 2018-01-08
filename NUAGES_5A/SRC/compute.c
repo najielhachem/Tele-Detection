@@ -128,24 +128,20 @@ int KMeans(guchar* pucIm,
 			nbElts[i] = nbElts[i] == 0 ? 1 : nbElts[i];
 			guchar val = newMeans[VecSize * i + (VecSize / 2)] / nbElts[i];
 
-			printf("%d -- %u --> %u\n", i, means[VecSize * i], val);
-			
-			if (abs(val - means[VecSize * i]) > 10)
+			if (abs(val - means[VecSize * i]) > 2)
 				stable = 0;
 			/* fixer la nouvelle valeur de la moyenne */
 			for (int j = 0; j < VecSize; ++j)
 				means[VecSize * i + j] = val;
 		}
-		printf("\n----------------------\n\n");
 	}
 
 	/* recherche de la classe clouds grace aux moyennes */
-	int clouds = 0;
+	int clouds = -1;
 	guchar maxVal = 0;
 	for (int i = 0; i < NbClass; ++i)
 	{
-		printf("%d\n", means[VecSize * i]);
-		if (maxVal < means[VecSize * i])
+		if (means[VecSize * i] > maxVal && means[VecSize * i] > 200)
 		{
 			maxVal = means[VecSize * i];
 			clouds = i;
@@ -186,8 +182,6 @@ void ComputeImage(guchar* pucImaOrig,
   int iNbChannels = 3; /* on travaille sur des images couleurs*/
   guchar ucMeanPix;
 
-  printf("Segmentation de l'image.... A vous!\n");
-  
   for (int iNumPix = 0; iNumPix < NbCol * NbLine; ++iNumPix)
 	{
     /* moyenne sur les composantes RVB */
@@ -208,8 +202,6 @@ void ComputeImage(guchar* pucImaOrig,
 	int pClasses[NbLine * NbCol];
 	int clouds = KMeans(pucImaRes, NbLine, NbCol, iNbChannels, pClasses);
 
-	printf("cloud: %d\n", clouds);
-	
 	/* mettre les pixels du nuage en blancs */
   for (int iNumPix = 0; iNumPix < NbCol * NbLine; ++iNumPix)
 	{
@@ -218,14 +210,13 @@ void ComputeImage(guchar* pucImaOrig,
 		{
 			int i = iNumPix * iNbChannels + iNumChannel;
       if (pClasses[iNumPix] == clouds)
-				*(pucImaRes + i) = 255;
+			{
+				*(pucImaRes + i) = 0;
+				if (iNumChannel == 1)
+					*(pucImaRes + i) = 180;
+			}
 			else
 				*(pucImaRes + i) = *(pucImaOrig + i); 
 		}
 	}
-
-	
 }
-
-
-

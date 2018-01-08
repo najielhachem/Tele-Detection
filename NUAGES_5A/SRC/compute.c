@@ -19,7 +19,6 @@ int compare (const void* a,
 int nearest(guchar* vector,
 		guchar* means)
 {
-	printf("nearest\n");
 	int res = 0;
 	int minDiff = VecSize * 255;
 
@@ -35,7 +34,6 @@ int nearest(guchar* vector,
 			res = i;
 		}
 	}
-	printf("end of nearest\n");
 	return res;
 }
 
@@ -46,8 +44,6 @@ void getVector(guchar* pucIm,
 		int col,
 		guchar* vector)
 {
-	printf("getVector\n");
-	printf("col: %d\n", col);
 	/* initialisation du vecteur a la valeur du pixel */
 	for (int i = 0; i < VecSize; ++i)
 		vector[i] = pucIm[NbCol * line + col];
@@ -62,10 +58,8 @@ void getVector(guchar* pucIm,
 	if (col < NbCol - 1)
 		vector[4] = pucIm[NbCol * line + col + 1];
 
-	printf("col: %d\n", col);
 	/* trie du vecteur */
-	qsort(vector, VecSize, sizeof(int), compare);
-	printf("col: %d\n", col);
+	qsort(vector, VecSize, sizeof(guchar), compare);
 }
 
 
@@ -75,13 +69,12 @@ int KMeans(guchar* pucIm,
 		int NbCol,
 		int* pClasses)
 {
-	printf("KMeans\n");
 	/* declaration des moyennes des classes */
 	guchar means[VecSize * NbClass];
 	/* initialisation des moyennes sur l'axe homogene */
 	for (int i = 0; i < NbClass; ++i)
 		for (int j = 0; j < VecSize; ++j)
-			means[VecSize * i + j] = 255 - 10 * i;
+			means[VecSize * i + j] = i * 255 / NbClass;
 	
 	/* initialisation des classes de chaque pixel a -1 */
 	for (int i = 0; i < NbLine * NbCol; ++i)
@@ -109,14 +102,9 @@ int KMeans(guchar* pucIm,
 			{
 				/* trouver la classe la plus proche au vecteur voisin du pixel */
 				guchar vector[VecSize];
-				printf("j1: %d\n", j);
 				getVector(pucIm, NbLine, NbCol, i, j, vector);
-				printf("j2: %d\n", j);
 				int c = nearest(vector, means);
-				printf("j3: %d\n", j);
 				pClasses[NbCol * i + j] = c;
-
-				printf("KMeans: c = %d\n", c);
 		
 				/* ajout du vecteur a la nouvelle moyenne de sa classe */
 				for (int k = 0; k < VecSize; ++k)
@@ -125,8 +113,7 @@ int KMeans(guchar* pucIm,
 			}
 		}
 
-		printf("computing new mean\n");
-
+		printf("computing new means\n");
 		stable = 1; /* supposont l'etat stable */
 		/* mise a jour des moyennes */
 		for (int i = 0; i < NbClass; ++i)
@@ -135,8 +122,9 @@ int KMeans(guchar* pucIm,
 			 * suffit de trier le vecteur et prendre la valeur au milieur */
 			
 			/* trie du vecteur */
-			qsort(newMeans + VecSize * i, VecSize, sizeof(int), compare);
+			qsort(newMeans + VecSize * i, VecSize, sizeof(guchar), compare);
 			/* prendre la medianne comme valeur homogene */
+			nbElts[i] = nbElts[i] == 0 ? 1 : nbElts[i];
 			guchar val = newMeans[VecSize * i + (VecSize / 2)] / nbElts[i];
 			if (val != means[VecSize * i])
 				stable = 0;
@@ -157,6 +145,8 @@ int KMeans(guchar* pucIm,
 			clouds = i;
 		}
 	}
+
+	printf("end of kmeans\n");
 
 	return clouds;
 }
@@ -194,38 +184,47 @@ void ComputeImage(guchar* pucImaOrig,
 
   printf("Segmentation de l'image.... A vous!\n");
   
-  for (int iNumPix = 0; iNumPix < NbCol * NbLine * iNbChannels; iNumPix += iNbChannels)
+  for (int iNumPix = 0; iNumPix < NbCol * NbLine; ++iNumPix)
 	{
     /* moyenne sur les composantes RVB */
     ucMeanPix = (unsigned char) 
 			(
 				(
-				 *(pucImaOrig + iNumPix    ) +
-				 *(pucImaOrig + iNumPix + 1) +
-				 *(pucImaOrig + iNumPix + 2) 
+				 *(pucImaOrig + iNumPix * iNbChannels    ) +
+				 *(pucImaOrig + iNumPix * iNbChannels + 1) +
+				 *(pucImaOrig + iNumPix * iNbChannels + 2) 
 				) / 3
 			);
     /* sauvegarde du resultat */
     for (int iNumChannel = 0; iNumChannel < iNbChannels; iNumChannel++)
-      *(pucImaRes + iNumPix + iNumChannel) = ucMeanPix;
+      *(pucImaRes + iNumPix * iNbChannels + iNumChannel) = ucMeanPix;
   }
 
 	/* application du k-means */
 	int pClasses[NbLine * NbCol];
 	int clouds = KMeans(pucImaRes, NbLine, NbCol, pClasses);
 
+	printf("cloud: %d\n", clouds);
+
+	
+	 
+	
 	/* mettre les pixels du nuage en blancs */
-  for (int iNumPix = 0; iNumPix < NbCol * NbLine * iNbChannels; iNumPix += iNbChannels)
+  for (int iNumPix = 0; iNumPix < NbCol * NbLine; ++iNumPix)
 	{
     /* sauvegarde du resultat */
     for (int iNumChannel = 0; iNumChannel < iNbChannels; iNumChannel++)
 		{
+			int i = iNumPix * iNbChannels + iNumChannel;
+			printf("%d - %d\n", iNumPix, pClasses[iNumPix]);
       if (pClasses[iNumPix] == clouds)
-				*(pucImaRes + iNumPix + iNumChannel) = 255;
+				*(pucImaRes + i) = 255;
 			else
-				*(pucImaRes + iNumPix + iNumChannel) = *(pucImaOrig + iNumPix + iNumChannel); 
+				*(pucImaRes + i) = *(pucImaOrig + i); 
 		}
 	}
+
+	
 }
 
 

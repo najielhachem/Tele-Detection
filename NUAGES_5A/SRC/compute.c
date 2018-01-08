@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <gtk/gtk.h>
 
-#define NbClass 10
+#define NbClass 7
 #define VecSize 5
 
 /*******************************************************
@@ -25,7 +25,7 @@ int nearest(guchar* vector,
 	/* Trouver la classe avec le vecteur moyen le plus proche selon la norme 1 */
 	for (int i = 0; i < NbClass; ++i)
 	{
-		guchar diff = 0;
+		int diff = 0;
 		for (int j = 0; j < VecSize; ++j)
 			diff += abs(vector[j] - means[VecSize * i + j]);
 		if (diff < minDiff)
@@ -40,23 +40,24 @@ int nearest(guchar* vector,
 void getVector(guchar* pucIm,
 		int NbLine,
 		int NbCol,
+		int iNbChannels,
 		int line,
 		int col,
 		guchar* vector)
 {
 	/* initialisation du vecteur a la valeur du pixel */
 	for (int i = 0; i < VecSize; ++i)
-		vector[i] = pucIm[NbCol * line + col];
+		vector[i] = pucIm[iNbChannels * (NbCol * line + col)];
 	
 	/* choisir la valeur du voisin si on n'est pas sur les bords */
 	if (line > 1)
-		vector[1] = pucIm[NbCol * (line - 1) + col];
+		vector[1] = pucIm[iNbChannels * (NbCol * (line - 1) + col)];
 	if (line < NbLine - 1)
-		vector[2] = pucIm[NbCol * (line + 1) + col];
+		vector[2] = pucIm[iNbChannels * (NbCol * (line + 1) + col)];
 	if (col > 1)
-		vector[3] = pucIm[NbCol * line + col - 1];
+		vector[3] = pucIm[iNbChannels * (NbCol * line + col - 1)];
 	if (col < NbCol - 1)
-		vector[4] = pucIm[NbCol * line + col + 1];
+		vector[4] = pucIm[iNbChannels * (NbCol * line + col + 1)];
 
 	/* trie du vecteur */
 	qsort(vector, VecSize, sizeof(guchar), compare);
@@ -67,6 +68,7 @@ void getVector(guchar* pucIm,
 int KMeans(guchar* pucIm,
 		int NbLine,
 		int NbCol,
+		int iNbChannels,
 		int* pClasses)
 {
 	/* declaration des moyennes des classes */
@@ -102,7 +104,7 @@ int KMeans(guchar* pucIm,
 			{
 				/* trouver la classe la plus proche au vecteur voisin du pixel */
 				guchar vector[VecSize];
-				getVector(pucIm, NbLine, NbCol, i, j, vector);
+				getVector(pucIm, NbLine, NbCol, iNbChannels, i, j, vector);
 				int c = nearest(vector, means);
 				pClasses[NbCol * i + j] = c;
 		
@@ -204,7 +206,7 @@ void ComputeImage(guchar* pucImaOrig,
 
 	/* application du k-means */
 	int pClasses[NbLine * NbCol];
-	int clouds = KMeans(pucImaRes, NbLine, NbCol, pClasses);
+	int clouds = KMeans(pucImaRes, NbLine, NbCol, iNbChannels, pClasses);
 
 	printf("cloud: %d\n", clouds);
 	

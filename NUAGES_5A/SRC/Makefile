@@ -8,7 +8,7 @@
 CC = gcc
 OBJ = ../OBJ
 EXE = ../EXE
-CCFLAGS = -Wall -g `pkg-config --cflags gtk+-2.0`
+CCFLAGS = -std=c11 -Wall -g `pkg-config --cflags gtk+-2.0`
 LDFLAGS = `pkg-config --libs gtk+-2.0`
 
 # compilation

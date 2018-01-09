@@ -1,8 +1,10 @@
+#include "compute.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <gtk/gtk.h>
 
-#define NbClass 7
+#define NbClass 10
 #define VecSize 5
 
 /*******************************************************
@@ -128,7 +130,7 @@ int KMeans(guchar* pucIm,
 			nbElts[i] = nbElts[i] == 0 ? 1 : nbElts[i];
 			guchar val = newMeans[VecSize * i + (VecSize / 2)] / nbElts[i];
 
-			if (abs(val - means[VecSize * i]) > 2)
+			if (abs(val - means[VecSize * i]) > 3)
 				stable = 0;
 			/* fixer la nouvelle valeur de la moyenne */
 			for (int j = 0; j < VecSize; ++j)
@@ -175,8 +177,8 @@ int KMeans(guchar* pucIm,
 
   ---------------------------------------*/
 void ComputeImage(guchar* pucImaOrig, 
-		  int NbLine,
-		  int NbCol, 
+		  guint NbLine,
+		  guint NbCol, 
 		  guchar* pucImaRes)
 {
   int iNbChannels = 3; /* on travaille sur des images couleurs*/
@@ -212,8 +214,8 @@ void ComputeImage(guchar* pucImaOrig,
       if (pClasses[iNumPix] == clouds)
 			{
 				*(pucImaRes + i) = 0;
-				if (iNumChannel == 1)
-					*(pucImaRes + i) = 180;
+				if (iNumChannel == CloudChannel)
+					*(pucImaRes + i) = CloudColor;
 			}
 			else
 				*(pucImaRes + i) = *(pucImaOrig + i); 
